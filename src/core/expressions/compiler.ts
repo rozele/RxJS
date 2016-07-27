@@ -17,7 +17,7 @@ class Expression {
         return new PrintVisitor().visit(this);
     }
 
-    toBonsai(): string {
+    toBonsai(): any {
         return new BonsaiVisitor().visit(this);
     }
 
@@ -1365,7 +1365,10 @@ class BonsaiVisitor extends ExpressionVisitorGeneric<any> {
     scopes: ParameterExpression[][] = [];
 
     visitBlock(node: BlockExpression): any {
-        return [ "{...}", node.variables.map(v => v.name), this.visitMany(node.expressions) ];
+        this.scopes.push(node.variables);
+        var res = [ "{...}", node.variables.map(v => v.name), this.visitMany(node.expressions) ];
+        this.scopes.pop();
+        return res;
     }
 
     visitConstant(node: ConstantExpression): any {

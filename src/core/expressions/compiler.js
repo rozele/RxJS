@@ -1200,7 +1200,10 @@ var BonsaiVisitor = (function (_super) {
         this.scopes = [];
     }
     BonsaiVisitor.prototype.visitBlock = function (node) {
-        return ["{...}", node.variables.map(function (v) { return v.name; }), this.visitMany(node.expressions)];
+        this.scopes.push(node.variables);
+        var res = ["{...}", node.variables.map(function (v) { return v.name; }), this.visitMany(node.expressions)];
+        this.scopes.pop();
+        return res;
     };
     BonsaiVisitor.prototype.visitConstant = function (node) {
         return [":", node.value];

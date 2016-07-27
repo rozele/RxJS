@@ -4,14 +4,18 @@ var Tests = (function () {
         this.element = element;
     }
     Tests.prototype.start = function () {
-        var a = Expression.add(Expression.constant(1), Expression.constant(2));
-        var e = Expression.block([], [a]);
+        var v = Expression.parameter("h");
+        var a = Expression.assign(v, Expression.add(Expression.constant(1), Expression.constant(2)));
+        var e = Expression.block([v], [a]);
         var l = Expression.lambda(e, []);
         var c = l.compileToFunction();
         var f = l.compile();
         var b = l.toBonsai();
         var x = f();
-        this.element.innerHTML = "Eval(" + l + ") = Eval(" + c + ") = Eval(" + JSON.stringify(b) + ") = " + x;
+        var p = new BonsaiParser();
+        var r = p.visit(b);
+        var rc = r.compileToFunction();
+        this.element.innerHTML = "Eval(" + l + ") = Eval(" + c + ") = Eval(" + JSON.stringify(b) + ") = " + x + " = " + rc;
     };
     return Tests;
 }());
