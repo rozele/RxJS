@@ -4,8 +4,9 @@ var Tests = (function () {
         this.element = element;
     }
     Tests.prototype.start = function () {
-        var e = Expression.add(Expression.constant(1), Expression.constant(2));
-        var l = Expression.lambda(e);
+        var a = Expression.add(Expression.constant(1), Expression.constant(2));
+        var e = Expression.block([], [a]);
+        var l = Expression.lambda(e, []);
         var c = l.compileToFunction();
         var f = l.compile();
         var b = l.toBonsai();
@@ -13,7 +14,7 @@ var Tests = (function () {
         this.element.innerHTML = "Eval(" + l + ") = Eval(" + c + ") = Eval(" + JSON.stringify(b) + ") = " + x;
     };
     return Tests;
-})();
+}());
 window.onload = function () {
     var el = document.getElementById('content');
     var tests = new Tests(el);

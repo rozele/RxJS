@@ -8,8 +8,9 @@ class Tests {
     }
 
     start() {
-        var e = Expression.add(Expression.constant(1), Expression.constant(2));
-        var l = Expression.lambda<() => number>(e);
+        var a = Expression.add(Expression.constant(1), Expression.constant(2));
+        var e = Expression.block([], [a]);
+        var l = Expression.lambda<() => number>(e, []);
         var c = l.compileToFunction();
         var f = l.compile();
         var b = l.toBonsai();

@@ -1,8 +1,7 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var Expression = (function () {
     function Expression(nodeType) {
@@ -20,6 +19,9 @@ var Expression = (function () {
     Expression.prototype.toBonsai = function () {
         return new BonsaiVisitor().visit(this);
     };
+    Expression.block = function (variables, expressions) {
+        return new BlockExpression(variables, expressions);
+    };
     Expression.constant = function (value) {
         return new ConstantExpression(value);
     };
@@ -30,111 +32,142 @@ var Expression = (function () {
         return new ConditionalExpression(test, ifTrue, ifFalse);
     };
     Expression.add = function (left, right) {
-        return new BinaryExpression(3 /* Add */, left, right);
+        return new BinaryExpression(ExpressionType.Add, left, right);
     };
     Expression.subtract = function (left, right) {
-        return new BinaryExpression(4 /* Subtract */, left, right);
+        return new BinaryExpression(ExpressionType.Subtract, left, right);
     };
     Expression.multiply = function (left, right) {
-        return new BinaryExpression(5 /* Multiply */, left, right);
+        return new BinaryExpression(ExpressionType.Multiply, left, right);
     };
     Expression.divide = function (left, right) {
-        return new BinaryExpression(6 /* Divide */, left, right);
+        return new BinaryExpression(ExpressionType.Divide, left, right);
     };
     Expression.modulo = function (left, right) {
-        return new BinaryExpression(7 /* Modulo */, left, right);
+        return new BinaryExpression(ExpressionType.Modulo, left, right);
     };
     Expression.and = function (left, right) {
-        return new BinaryExpression(8 /* And */, left, right);
+        return new BinaryExpression(ExpressionType.And, left, right);
     };
     Expression.andAlso = function (left, right) {
-        return new BinaryExpression(10 /* AndAlso */, left, right);
+        return new BinaryExpression(ExpressionType.AndAlso, left, right);
     };
     Expression.or = function (left, right) {
-        return new BinaryExpression(9 /* Or */, left, right);
+        return new BinaryExpression(ExpressionType.Or, left, right);
     };
     Expression.orElse = function (left, right) {
-        return new BinaryExpression(11 /* OrElse */, left, right);
+        return new BinaryExpression(ExpressionType.OrElse, left, right);
     };
     Expression.exclusiveOr = function (left, right) {
-        return new BinaryExpression(12 /* ExclusiveOr */, left, right);
+        return new BinaryExpression(ExpressionType.ExclusiveOr, left, right);
     };
     Expression.equal = function (left, right) {
-        return new BinaryExpression(13 /* Equal */, left, right);
+        return new BinaryExpression(ExpressionType.Equal, left, right);
     };
     Expression.notEqual = function (left, right) {
-        return new BinaryExpression(14 /* NotEqual */, left, right);
+        return new BinaryExpression(ExpressionType.NotEqual, left, right);
     };
     Expression.lessThan = function (left, right) {
-        return new BinaryExpression(15 /* LessThan */, left, right);
+        return new BinaryExpression(ExpressionType.LessThan, left, right);
     };
     Expression.lessThanOrEqual = function (left, right) {
-        return new BinaryExpression(16 /* LessThanOrEqual */, left, right);
+        return new BinaryExpression(ExpressionType.LessThanOrEqual, left, right);
     };
     Expression.greaterThan = function (left, right) {
-        return new BinaryExpression(17 /* GreaterThan */, left, right);
+        return new BinaryExpression(ExpressionType.GreaterThan, left, right);
     };
     Expression.greaterThanOrEqual = function (left, right) {
-        return new BinaryExpression(18 /* GreaterThanOrEqual */, left, right);
+        return new BinaryExpression(ExpressionType.GreaterThanOrEqual, left, right);
     };
     Expression.leftShift = function (left, right) {
-        return new BinaryExpression(19 /* LeftShift */, left, right);
+        return new BinaryExpression(ExpressionType.LeftShift, left, right);
     };
     Expression.rightShift = function (left, right) {
-        return new BinaryExpression(20 /* RightShift */, left, right);
+        return new BinaryExpression(ExpressionType.RightShift, left, right);
+    };
+    Expression.arrayIndex = function (left, right) {
+        return new BinaryExpression(ExpressionType.ArrayIndex, left, right);
+    };
+    Expression.assign = function (left, right) {
+        return new BinaryExpression(ExpressionType.Assign, left, right);
+    };
+    Expression.addAssign = function (left, right) {
+        return new BinaryExpression(ExpressionType.AddAssign, left, right);
+    };
+    Expression.subtractAssign = function (left, right) {
+        return new BinaryExpression(ExpressionType.SubtractAssign, left, right);
+    };
+    Expression.multiplyAssign = function (left, right) {
+        return new BinaryExpression(ExpressionType.MultiplyAssign, left, right);
+    };
+    Expression.divideAssign = function (left, right) {
+        return new BinaryExpression(ExpressionType.DivideAssign, left, right);
+    };
+    Expression.moduloAssign = function (left, right) {
+        return new BinaryExpression(ExpressionType.ModuloAssign, left, right);
+    };
+    Expression.leftShiftAssign = function (left, right) {
+        return new BinaryExpression(ExpressionType.LeftShiftAssign, left, right);
+    };
+    Expression.rightShiftAssign = function (left, right) {
+        return new BinaryExpression(ExpressionType.RightShiftAssign, left, right);
+    };
+    Expression.andAssign = function (left, right) {
+        return new BinaryExpression(ExpressionType.AndAssign, left, right);
+    };
+    Expression.orAssign = function (left, right) {
+        return new BinaryExpression(ExpressionType.OrAssign, left, right);
+    };
+    Expression.exclusiveOrAssign = function (left, right) {
+        return new BinaryExpression(ExpressionType.ExclusiveOrAssign, left, right);
     };
     Expression.not = function (operand) {
-        return new UnaryExpression(22 /* Not */, operand);
+        return new UnaryExpression(ExpressionType.Not, operand);
     };
     Expression.unaryPlus = function (operand) {
-        return new UnaryExpression(24 /* UnaryPlus */, operand);
+        return new UnaryExpression(ExpressionType.UnaryPlus, operand);
     };
     Expression.negate = function (operand) {
-        return new UnaryExpression(23 /* Negate */, operand);
+        return new UnaryExpression(ExpressionType.Negate, operand);
     };
     Expression.onesComplement = function (operand) {
-        return new UnaryExpression(25 /* OnesComplement */, operand);
+        return new UnaryExpression(ExpressionType.OnesComplement, operand);
     };
-    Expression.lambda = function (body) {
-        var parameters = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            parameters[_i - 1] = arguments[_i];
-        }
+    Expression.postDecrementAssign = function (operand) {
+        return new UnaryExpression(ExpressionType.PostDecrementAssign, operand);
+    };
+    Expression.postIncrementAssign = function (operand) {
+        return new UnaryExpression(ExpressionType.PostIncrementAssign, operand);
+    };
+    Expression.preDecrementAssign = function (operand) {
+        return new UnaryExpression(ExpressionType.PreDecrementAssign, operand);
+    };
+    Expression.preIncrementAssign = function (operand) {
+        return new UnaryExpression(ExpressionType.PreIncrementAssign, operand);
+    };
+    Expression.quote = function (operand) {
+        return new UnaryExpression(ExpressionType.Quote, operand);
+    };
+    Expression.lambda = function (body, parameters) {
         return new LambdaExpression(body, parameters);
     };
-    Expression.invoke = function (expression) {
-        var args = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            args[_i - 1] = arguments[_i];
-        }
+    Expression.invoke = function (expression, args) {
         return new InvocationExpression(expression, args);
     };
-    Expression.new = function (typeName) {
-        var args = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            args[_i - 1] = arguments[_i];
-        }
+    Expression.new = function (typeName, args) {
         return new NewExpression(typeName, args);
     };
-    Expression.functionCall = function (obj, methodName) {
-        var args = [];
-        for (var _i = 2; _i < arguments.length; _i++) {
-            args[_i - 2] = arguments[_i];
-        }
+    Expression.functionCall = function (obj, methodName, args) {
         return new FunctionCallExpression(obj, methodName, args);
     };
     Expression.member = function (obj, memberName) {
         return new MemberExpression(obj, memberName);
     };
-    Expression.index = function (obj) {
-        var args = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            args[_i - 1] = arguments[_i];
-        }
+    Expression.index = function (obj, args) {
         return new IndexExpression(obj, args);
     };
     return Expression;
-})();
+}());
 var ExpressionVisitorGeneric = (function () {
     function ExpressionVisitorGeneric() {
     }
@@ -144,39 +177,19 @@ var ExpressionVisitorGeneric = (function () {
         }
         return node.acceptGeneric(this);
     };
-    ExpressionVisitorGeneric.prototype.visitConstant = function (node) {
-        throw new Error("not implemented");
-    };
-    ExpressionVisitorGeneric.prototype.visitParameter = function (node) {
-        throw new Error("not implemented");
-    };
-    ExpressionVisitorGeneric.prototype.visitBinary = function (node) {
-        throw new Error("not implemented");
-    };
-    ExpressionVisitorGeneric.prototype.visitUnary = function (node) {
-        throw new Error("not implemented");
-    };
-    ExpressionVisitorGeneric.prototype.visitConditional = function (node) {
-        throw new Error("not implemented");
-    };
-    ExpressionVisitorGeneric.prototype.visitLambda = function (node) {
-        throw new Error("not implemented");
-    };
-    ExpressionVisitorGeneric.prototype.visitInvoke = function (node) {
-        throw new Error("not implemented");
-    };
-    ExpressionVisitorGeneric.prototype.visitCall = function (node) {
-        throw new Error("not implemented");
-    };
-    ExpressionVisitorGeneric.prototype.visitNew = function (node) {
-        throw new Error("not implemented");
-    };
-    ExpressionVisitorGeneric.prototype.visitMember = function (node) {
-        throw new Error("not implemented");
-    };
-    ExpressionVisitorGeneric.prototype.visitIndex = function (node) {
-        throw new Error("not implemented");
-    };
+    ExpressionVisitorGeneric.prototype.visitBlock = function (node) { throw new Error("not implemented"); };
+    ExpressionVisitorGeneric.prototype.visitConstant = function (node) { throw new Error("not implemented"); };
+    ExpressionVisitorGeneric.prototype.visitParameter = function (node) { throw new Error("not implemented"); };
+    ExpressionVisitorGeneric.prototype.visitBinary = function (node) { throw new Error("not implemented"); };
+    ExpressionVisitorGeneric.prototype.visitUnary = function (node) { throw new Error("not implemented"); };
+    ExpressionVisitorGeneric.prototype.visitConditional = function (node) { throw new Error("not implemented"); };
+    ExpressionVisitorGeneric.prototype.visitLambda = function (node) { throw new Error("not implemented"); };
+    ExpressionVisitorGeneric.prototype.visitInvoke = function (node) { throw new Error("not implemented"); };
+    ExpressionVisitorGeneric.prototype.visitCall = function (node) { throw new Error("not implemented"); };
+    ExpressionVisitorGeneric.prototype.visitNew = function (node) { throw new Error("not implemented"); };
+    ExpressionVisitorGeneric.prototype.visitMember = function (node) { throw new Error("not implemented"); };
+    ExpressionVisitorGeneric.prototype.visitIndex = function (node) { throw new Error("not implemented"); };
+    ExpressionVisitorGeneric.prototype.visitExtension = function (node) { throw new Error("not implemented"); };
     ExpressionVisitorGeneric.prototype.visitMany = function (nodes) {
         var res = new Array(nodes.length);
         for (var i = 0; i < nodes.length; i++) {
@@ -187,7 +200,7 @@ var ExpressionVisitorGeneric = (function () {
         return res;
     };
     return ExpressionVisitorGeneric;
-})();
+}());
 var ExpressionVisitor = (function () {
     function ExpressionVisitor() {
     }
@@ -196,6 +209,9 @@ var ExpressionVisitor = (function () {
             return null;
         }
         return node.accept(this);
+    };
+    ExpressionVisitor.prototype.visitBlock = function (node) {
+        return node;
     };
     ExpressionVisitor.prototype.visitConstant = function (node) {
         return node;
@@ -230,6 +246,9 @@ var ExpressionVisitor = (function () {
     ExpressionVisitor.prototype.visitIndex = function (node) {
         return node.update(this.visit(node.obj), this.visitMany(node.args));
     };
+    ExpressionVisitor.prototype.visitExtension = function (node) {
+        throw new Error("not implemented");
+    };
     ExpressionVisitor.prototype.visitMany = function (nodes) {
         var res = new Array(nodes.length);
         for (var i = 0; i < nodes.length; i++) {
@@ -240,11 +259,46 @@ var ExpressionVisitor = (function () {
         return res;
     };
     return ExpressionVisitor;
-})();
+}());
+var BlockExpression = (function (_super) {
+    __extends(BlockExpression, _super);
+    function BlockExpression(variables, expressions) {
+        _super.call(this, ExpressionType.Block);
+        this._variables = variables;
+        this._expressions = expressions;
+    }
+    Object.defineProperty(BlockExpression.prototype, "variables", {
+        get: function () {
+            return this._variables;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(BlockExpression.prototype, "expressions", {
+        get: function () {
+            return this._expressions;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    BlockExpression.prototype.accept = function (visitor) {
+        return visitor.visitBlock(this);
+    };
+    BlockExpression.prototype.acceptGeneric = function (visitor) {
+        return visitor.visitBlock(this);
+    };
+    BlockExpression.prototype.update = function (variables, expressions) {
+        if (variables !== this._variables || expressions !== this._expressions) {
+            return new BlockExpression(variables, expressions);
+        }
+        return this;
+    };
+    return BlockExpression;
+}(Expression));
 var ConstantExpression = (function (_super) {
     __extends(ConstantExpression, _super);
     function ConstantExpression(value) {
-        _super.call(this, 0 /* Constant */);
+        _super.call(this, ExpressionType.Constant);
         this._value = value;
     }
     Object.defineProperty(ConstantExpression.prototype, "value", {
@@ -261,11 +315,32 @@ var ConstantExpression = (function (_super) {
         return visitor.visitConstant(this);
     };
     return ConstantExpression;
-})(Expression);
+}(Expression));
+var LiteralConstantExpression = (function (_super) {
+    __extends(LiteralConstantExpression, _super);
+    function LiteralConstantExpression(value) {
+        _super.call(this, ExpressionType.Constant);
+        this._value = value;
+    }
+    Object.defineProperty(LiteralConstantExpression.prototype, "value", {
+        get: function () {
+            return this._value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    LiteralConstantExpression.prototype.accept = function (visitor) {
+        return visitor.visitConstant(this);
+    };
+    LiteralConstantExpression.prototype.acceptGeneric = function (visitor) {
+        return visitor.visitConstant(this);
+    };
+    return LiteralConstantExpression;
+}(Expression));
 var ParameterExpression = (function (_super) {
     __extends(ParameterExpression, _super);
     function ParameterExpression(name) {
-        _super.call(this, 1 /* Parameter */);
+        _super.call(this, ExpressionType.Parameter);
         this._name = name;
     }
     Object.defineProperty(ParameterExpression.prototype, "name", {
@@ -281,8 +356,11 @@ var ParameterExpression = (function (_super) {
     ParameterExpression.prototype.acceptGeneric = function (visitor) {
         return visitor.visitParameter(this);
     };
+    ParameterExpression.prototype.let = function (selector) {
+        return selector(this);
+    };
     return ParameterExpression;
-})(Expression);
+}(Expression));
 var UnaryExpression = (function (_super) {
     __extends(UnaryExpression, _super);
     function UnaryExpression(nodeType, operand) {
@@ -309,7 +387,7 @@ var UnaryExpression = (function (_super) {
         return this;
     };
     return UnaryExpression;
-})(Expression);
+}(Expression));
 var BinaryExpression = (function (_super) {
     __extends(BinaryExpression, _super);
     function BinaryExpression(nodeType, left, right) {
@@ -344,11 +422,11 @@ var BinaryExpression = (function (_super) {
         return this;
     };
     return BinaryExpression;
-})(Expression);
+}(Expression));
 var ConditionalExpression = (function (_super) {
     __extends(ConditionalExpression, _super);
     function ConditionalExpression(test, ifTrue, ifFalse) {
-        _super.call(this, 26 /* Condition */);
+        _super.call(this, ExpressionType.Condition);
         this._test = test;
         this._ifTrue = ifTrue;
         this._ifFalse = ifFalse;
@@ -387,11 +465,11 @@ var ConditionalExpression = (function (_super) {
         return this;
     };
     return ConditionalExpression;
-})(Expression);
+}(Expression));
 var LambdaExpression = (function (_super) {
     __extends(LambdaExpression, _super);
     function LambdaExpression(body, parameters) {
-        _super.call(this, 2 /* Lambda */);
+        _super.call(this, ExpressionType.Lambda);
         this._body = body;
         this._parameters = parameters;
     }
@@ -425,7 +503,7 @@ var LambdaExpression = (function (_super) {
         var comp = new LambdaCompiler();
         comp.visit(this);
         var code = comp.code;
-        code = code.replace(/\"/g, "\\\""); // TODO: more escape sequences
+        code = code.replace(/"/g, "\\\""); // TODO: more escape sequences
         code = "new Function(\"return " + code + ";\")";
         code = code.replace(/\r?\n|\r/g, "");
         if (debug) {
@@ -438,11 +516,11 @@ var LambdaExpression = (function (_super) {
         return eval(code)();
     };
     return LambdaExpression;
-})(Expression);
+}(Expression));
 var InvocationExpression = (function (_super) {
     __extends(InvocationExpression, _super);
     function InvocationExpression(expression, args) {
-        _super.call(this, 21 /* Invoke */);
+        _super.call(this, ExpressionType.Invoke);
         this._expression = expression;
         this._args = args;
     }
@@ -473,11 +551,11 @@ var InvocationExpression = (function (_super) {
         return this;
     };
     return InvocationExpression;
-})(Expression);
+}(Expression));
 var FunctionCallExpression = (function (_super) {
     __extends(FunctionCallExpression, _super);
     function FunctionCallExpression(expression, methodName, args) {
-        _super.call(this, 28 /* Call */);
+        _super.call(this, ExpressionType.Call);
         this._expression = expression;
         this._method = methodName;
         this._args = args;
@@ -516,11 +594,11 @@ var FunctionCallExpression = (function (_super) {
         return this;
     };
     return FunctionCallExpression;
-})(Expression);
+}(Expression));
 var IndexExpression = (function (_super) {
     __extends(IndexExpression, _super);
     function IndexExpression(expression, args) {
-        _super.call(this, 30 /* Index */);
+        _super.call(this, ExpressionType.Index);
         this._expression = expression;
         this._args = args;
     }
@@ -551,11 +629,11 @@ var IndexExpression = (function (_super) {
         return this;
     };
     return IndexExpression;
-})(Expression);
+}(Expression));
 var NewExpression = (function (_super) {
     __extends(NewExpression, _super);
     function NewExpression(typeName, args) {
-        _super.call(this, 27 /* New */);
+        _super.call(this, ExpressionType.New);
         this._type = typeName;
         this._args = args;
     }
@@ -586,11 +664,11 @@ var NewExpression = (function (_super) {
         return this;
     };
     return NewExpression;
-})(Expression);
+}(Expression));
 var MemberExpression = (function (_super) {
     __extends(MemberExpression, _super);
     function MemberExpression(obj, memberName) {
-        _super.call(this, 29 /* Member */);
+        _super.call(this, ExpressionType.Member);
         this._obj = obj;
         this._member = memberName;
     }
@@ -621,12 +699,12 @@ var MemberExpression = (function (_super) {
         return this;
     };
     return MemberExpression;
-})(Expression);
+}(Expression));
 var LambdaCompiler = (function (_super) {
     __extends(LambdaCompiler, _super);
     function LambdaCompiler() {
         _super.call(this);
-        this._stack = new Array();
+        this._stack = [];
     }
     Object.defineProperty(LambdaCompiler.prototype, "code", {
         get: function () {
@@ -637,6 +715,19 @@ var LambdaCompiler = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    LambdaCompiler.prototype.visitBlock = function (node) {
+        var vars = node.variables.map(function (v) { return ("var " + v.name + ";"); });
+        this.visitMany(node.expressions);
+        var n = node.expressions.length;
+        var exprs = new Array(n);
+        for (var i = 0; i < n; ++i) {
+            exprs[n - i - 1] = this._stack.pop();
+        }
+        var varList = vars.join(' ');
+        var exprList = exprs.join('; ');
+        this._stack.push("{ " + varList + " " + exprList + "; }");
+        return node;
+    };
     LambdaCompiler.prototype.visitConstant = function (node) {
         var value = "";
         if (typeof node.value == "string") {
@@ -659,16 +750,16 @@ var LambdaCompiler = (function (_super) {
         var o = this._stack.pop();
         var i = "";
         switch (node.nodeType) {
-            case 23 /* Negate */:
+            case ExpressionType.Negate:
                 i = "-";
                 break;
-            case 24 /* UnaryPlus */:
+            case ExpressionType.UnaryPlus:
                 i = "+";
                 break;
-            case 22 /* Not */:
+            case ExpressionType.Not:
                 i = "!";
                 break;
-            case 25 /* OnesComplement */:
+            case ExpressionType.OnesComplement:
                 i = "~";
                 break;
         }
@@ -683,60 +774,95 @@ var LambdaCompiler = (function (_super) {
         var l = this._stack.pop();
         var i = "";
         switch (node.nodeType) {
-            case 3 /* Add */:
+            case ExpressionType.Add:
                 i = "+";
                 break;
-            case 4 /* Subtract */:
+            case ExpressionType.Subtract:
                 i = "-";
                 break;
-            case 5 /* Multiply */:
+            case ExpressionType.Multiply:
                 i = "*";
                 break;
-            case 6 /* Divide */:
+            case ExpressionType.Divide:
                 i = "/";
                 break;
-            case 7 /* Modulo */:
+            case ExpressionType.Modulo:
                 i = "%";
                 break;
-            case 8 /* And */:
+            case ExpressionType.And:
                 i = "&";
                 break;
-            case 9 /* Or */:
+            case ExpressionType.Or:
                 i = "|";
                 break;
-            case 10 /* AndAlso */:
+            case ExpressionType.AndAlso:
                 i = "&&";
                 break;
-            case 11 /* OrElse */:
+            case ExpressionType.OrElse:
                 i = "||";
                 break;
-            case 12 /* ExclusiveOr */:
+            case ExpressionType.ExclusiveOr:
                 i = "^";
                 break;
-            case 13 /* Equal */:
+            case ExpressionType.Equal:
                 i = "===";
                 break;
-            case 14 /* NotEqual */:
+            case ExpressionType.NotEqual:
                 i = "!==";
                 break;
-            case 15 /* LessThan */:
+            case ExpressionType.LessThan:
                 i = "<";
                 break;
-            case 16 /* LessThanOrEqual */:
+            case ExpressionType.LessThanOrEqual:
                 i = "<=";
                 break;
-            case 17 /* GreaterThan */:
+            case ExpressionType.GreaterThan:
                 i = ">";
                 break;
-            case 18 /* GreaterThanOrEqual */:
+            case ExpressionType.GreaterThanOrEqual:
                 i = ">=";
                 break;
-            case 19 /* LeftShift */:
+            case ExpressionType.LeftShift:
                 i = "<<";
                 break;
-            case 20 /* RightShift */:
+            case ExpressionType.RightShift:
                 i = ">>";
                 break;
+            case ExpressionType.Assign:
+                i = "=";
+                break;
+            case ExpressionType.AddAssign:
+                i = "+=";
+                break;
+            case ExpressionType.SubtractAssign:
+                i = "-=";
+                break;
+            case ExpressionType.MultiplyAssign:
+                i = "*=";
+                break;
+            case ExpressionType.DivideAssign:
+                i = "/=";
+                break;
+            case ExpressionType.ModuloAssign:
+                i = "%=";
+                break;
+            case ExpressionType.LeftShiftAssign:
+                i = "<<=";
+                break;
+            case ExpressionType.RightShiftAssign:
+                i = ">>=";
+                break;
+            case ExpressionType.AndAssign:
+                i = "&=";
+                break;
+            case ExpressionType.OrAssign:
+                i = "|=";
+                break;
+            case ExpressionType.ExclusiveOrAssign:
+                i = "^=";
+                break;
+            default:
+                throw new Error("Invalid binary token.");
         }
         var res = "(" + l + " " + i + " " + r + ")";
         this._stack.push(res);
@@ -767,7 +893,7 @@ var LambdaCompiler = (function (_super) {
             args[n - i - 1] = this._stack.pop();
         }
         var allArgs = args.join(", ");
-        var res = "function(" + allArgs + ") { return " + body + "; }";
+        var res = "function(" + allArgs + ") { " + body + "; }";
         this._stack.push(res);
         return node;
     };
@@ -839,13 +965,13 @@ var LambdaCompiler = (function (_super) {
         return node;
     };
     return LambdaCompiler;
-})(ExpressionVisitor);
+}(ExpressionVisitor));
 var FreeVariableScanner = (function (_super) {
     __extends(FreeVariableScanner, _super);
     function FreeVariableScanner() {
         _super.call(this);
-        this._stack = new Array();
-        this._result = new Array();
+        this._stack = [];
+        this._result = [];
     }
     Object.defineProperty(FreeVariableScanner.prototype, "result", {
         get: function () {
@@ -874,46 +1000,65 @@ var FreeVariableScanner = (function (_super) {
         return node;
     };
     return FreeVariableScanner;
-})(ExpressionVisitor);
+}(ExpressionVisitor));
 var ExpressionType;
 (function (ExpressionType) {
-    ExpressionType[ExpressionType["Constant"] = 0] = "Constant";
-    ExpressionType[ExpressionType["Parameter"] = 1] = "Parameter";
-    ExpressionType[ExpressionType["Lambda"] = 2] = "Lambda";
-    ExpressionType[ExpressionType["Add"] = 3] = "Add";
-    ExpressionType[ExpressionType["Subtract"] = 4] = "Subtract";
-    ExpressionType[ExpressionType["Multiply"] = 5] = "Multiply";
-    ExpressionType[ExpressionType["Divide"] = 6] = "Divide";
-    ExpressionType[ExpressionType["Modulo"] = 7] = "Modulo";
-    ExpressionType[ExpressionType["And"] = 8] = "And";
-    ExpressionType[ExpressionType["Or"] = 9] = "Or";
-    ExpressionType[ExpressionType["AndAlso"] = 10] = "AndAlso";
-    ExpressionType[ExpressionType["OrElse"] = 11] = "OrElse";
-    ExpressionType[ExpressionType["ExclusiveOr"] = 12] = "ExclusiveOr";
-    ExpressionType[ExpressionType["Equal"] = 13] = "Equal";
-    ExpressionType[ExpressionType["NotEqual"] = 14] = "NotEqual";
-    ExpressionType[ExpressionType["LessThan"] = 15] = "LessThan";
-    ExpressionType[ExpressionType["LessThanOrEqual"] = 16] = "LessThanOrEqual";
-    ExpressionType[ExpressionType["GreaterThan"] = 17] = "GreaterThan";
-    ExpressionType[ExpressionType["GreaterThanOrEqual"] = 18] = "GreaterThanOrEqual";
-    ExpressionType[ExpressionType["LeftShift"] = 19] = "LeftShift";
-    ExpressionType[ExpressionType["RightShift"] = 20] = "RightShift";
-    ExpressionType[ExpressionType["Invoke"] = 21] = "Invoke";
-    ExpressionType[ExpressionType["Not"] = 22] = "Not";
-    ExpressionType[ExpressionType["Negate"] = 23] = "Negate";
-    ExpressionType[ExpressionType["UnaryPlus"] = 24] = "UnaryPlus";
-    ExpressionType[ExpressionType["OnesComplement"] = 25] = "OnesComplement";
-    ExpressionType[ExpressionType["Condition"] = 26] = "Condition";
-    ExpressionType[ExpressionType["New"] = 27] = "New";
-    ExpressionType[ExpressionType["Call"] = 28] = "Call";
-    ExpressionType[ExpressionType["Member"] = 29] = "Member";
-    ExpressionType[ExpressionType["Index"] = 30] = "Index";
+    ExpressionType[ExpressionType["Block"] = 0] = "Block";
+    ExpressionType[ExpressionType["Constant"] = 1] = "Constant";
+    ExpressionType[ExpressionType["Parameter"] = 2] = "Parameter";
+    ExpressionType[ExpressionType["Lambda"] = 3] = "Lambda";
+    ExpressionType[ExpressionType["Add"] = 4] = "Add";
+    ExpressionType[ExpressionType["Subtract"] = 5] = "Subtract";
+    ExpressionType[ExpressionType["Multiply"] = 6] = "Multiply";
+    ExpressionType[ExpressionType["Divide"] = 7] = "Divide";
+    ExpressionType[ExpressionType["Modulo"] = 8] = "Modulo";
+    ExpressionType[ExpressionType["And"] = 9] = "And";
+    ExpressionType[ExpressionType["Or"] = 10] = "Or";
+    ExpressionType[ExpressionType["AndAlso"] = 11] = "AndAlso";
+    ExpressionType[ExpressionType["OrElse"] = 12] = "OrElse";
+    ExpressionType[ExpressionType["ExclusiveOr"] = 13] = "ExclusiveOr";
+    ExpressionType[ExpressionType["Equal"] = 14] = "Equal";
+    ExpressionType[ExpressionType["NotEqual"] = 15] = "NotEqual";
+    ExpressionType[ExpressionType["LessThan"] = 16] = "LessThan";
+    ExpressionType[ExpressionType["LessThanOrEqual"] = 17] = "LessThanOrEqual";
+    ExpressionType[ExpressionType["GreaterThan"] = 18] = "GreaterThan";
+    ExpressionType[ExpressionType["GreaterThanOrEqual"] = 19] = "GreaterThanOrEqual";
+    ExpressionType[ExpressionType["LeftShift"] = 20] = "LeftShift";
+    ExpressionType[ExpressionType["RightShift"] = 21] = "RightShift";
+    ExpressionType[ExpressionType["ArrayIndex"] = 22] = "ArrayIndex";
+    ExpressionType[ExpressionType["Assign"] = 23] = "Assign";
+    ExpressionType[ExpressionType["AddAssign"] = 24] = "AddAssign";
+    ExpressionType[ExpressionType["SubtractAssign"] = 25] = "SubtractAssign";
+    ExpressionType[ExpressionType["ModuloAssign"] = 26] = "ModuloAssign";
+    ExpressionType[ExpressionType["MultiplyAssign"] = 27] = "MultiplyAssign";
+    ExpressionType[ExpressionType["DivideAssign"] = 28] = "DivideAssign";
+    ExpressionType[ExpressionType["LeftShiftAssign"] = 29] = "LeftShiftAssign";
+    ExpressionType[ExpressionType["RightShiftAssign"] = 30] = "RightShiftAssign";
+    ExpressionType[ExpressionType["AndAssign"] = 31] = "AndAssign";
+    ExpressionType[ExpressionType["OrAssign"] = 32] = "OrAssign";
+    ExpressionType[ExpressionType["ExclusiveOrAssign"] = 33] = "ExclusiveOrAssign";
+    ExpressionType[ExpressionType["Invoke"] = 34] = "Invoke";
+    ExpressionType[ExpressionType["Not"] = 35] = "Not";
+    ExpressionType[ExpressionType["Negate"] = 36] = "Negate";
+    ExpressionType[ExpressionType["UnaryPlus"] = 37] = "UnaryPlus";
+    ExpressionType[ExpressionType["OnesComplement"] = 38] = "OnesComplement";
+    ExpressionType[ExpressionType["PostDecrementAssign"] = 39] = "PostDecrementAssign";
+    ExpressionType[ExpressionType["PostIncrementAssign"] = 40] = "PostIncrementAssign";
+    ExpressionType[ExpressionType["PreDecrementAssign"] = 41] = "PreDecrementAssign";
+    ExpressionType[ExpressionType["PreIncrementAssign"] = 42] = "PreIncrementAssign";
+    ExpressionType[ExpressionType["Quote"] = 43] = "Quote";
+    ExpressionType[ExpressionType["Condition"] = 44] = "Condition";
+    ExpressionType[ExpressionType["New"] = 45] = "New";
+    ExpressionType[ExpressionType["Call"] = 46] = "Call";
+    ExpressionType[ExpressionType["Member"] = 47] = "Member";
+    ExpressionType[ExpressionType["Index"] = 48] = "Index";
+    ExpressionType[ExpressionType["Extension"] = 49] = "Extension";
 })(ExpressionType || (ExpressionType = {}));
 var Binder = (function (_super) {
     __extends(Binder, _super);
     function Binder(resources) {
         _super.call(this);
-        this._stack = new Array();
+        this._stack = [];
         this._resources = resources;
     }
     Binder.prototype.visitParameter = function (node) {
@@ -936,12 +1081,17 @@ var Binder = (function (_super) {
         return node;
     };
     return Binder;
-})(ExpressionVisitor);
+}(ExpressionVisitor));
 var PrintVisitor = (function (_super) {
     __extends(PrintVisitor, _super);
     function PrintVisitor() {
         _super.apply(this, arguments);
     }
+    PrintVisitor.prototype.visitBlock = function (node) {
+        var variables = this.visitMany(node.variables);
+        var expressions = this.visitMany(node.expressions);
+        return "Block([" + variables.join(", ") + "], " + expressions + ")";
+    };
     PrintVisitor.prototype.visitConstant = function (node) {
         return "Constant(" + node.value + ")";
     };
@@ -998,74 +1148,167 @@ var PrintVisitor = (function (_super) {
         return "Index(" + children.join(", ") + ")";
     };
     return PrintVisitor;
-})(ExpressionVisitorGeneric);
+}(ExpressionVisitorGeneric));
+var Discriminators = (function () {
+    function Discriminators() {
+    }
+    Discriminators.Constant = ":";
+    Discriminators.OnesComplement = "~";
+    Discriminators.Not = "!";
+    Discriminators.Quote = "`";
+    Discriminators.Plus = "+";
+    Discriminators.Minus = "-";
+    Discriminators.Multiply = "*";
+    Discriminators.Divide = "/";
+    Discriminators.Modulo = "%";
+    Discriminators.Power = "^^";
+    Discriminators.RightShift = ">>";
+    Discriminators.LeftShift = "<<";
+    Discriminators.LessThan = "<";
+    Discriminators.LessThanOrEqual = "<=";
+    Discriminators.GreaterThan = ">";
+    Discriminators.GreaterThanOrEqual = ">=";
+    Discriminators.Equal = "==";
+    Discriminators.NotEqual = "!=";
+    Discriminators.And = "&";
+    Discriminators.AndAlso = "&&";
+    Discriminators.Or = "|";
+    Discriminators.OrElse = "||";
+    Discriminators.ExclusiveOr = "^";
+    Discriminators.Conditional = "?:";
+    Discriminators.Lambda = "=>";
+    Discriminators.Parameter = "$";
+    Discriminators.Index = ".[]";
+    Discriminators.Invocation = "()";
+    Discriminators.MemberAccess = ".";
+    Discriminators.MethodCall = ".()";
+    Discriminators.New = "new";
+    Discriminators.MemberInit = "{.}";
+    Discriminators.ListInit = "{+}";
+    Discriminators.NewArrayInit = "new[]";
+    Discriminators.NewArrayBounds = "new[*]";
+    Discriminators.ArrayLength = "#";
+    Discriminators.ArrayIndex = "[]";
+    Discriminators.Assign = "=";
+    Discriminators.Block = "{...}";
+    return Discriminators;
+}());
 var BonsaiVisitor = (function (_super) {
     __extends(BonsaiVisitor, _super);
     function BonsaiVisitor() {
         _super.apply(this, arguments);
+        this.scopes = [];
     }
+    BonsaiVisitor.prototype.visitBlock = function (node) {
+        return ["{...}", node.variables.map(function (v) { return v.name; }), this.visitMany(node.expressions)];
+    };
     BonsaiVisitor.prototype.visitConstant = function (node) {
         return [":", node.value];
     };
     BonsaiVisitor.prototype.visitParameter = function (node) {
-        return ["$", node.name];
+        var parameterIdx;
+        var scopeIdx;
+        var found = false;
+        this.scopes.forEach(function (scope, i) {
+            scope.forEach(function (p, j) {
+                if (node === p) {
+                    found = true;
+                    scopeIdx = i;
+                    parameterIdx = j;
+                }
+            });
+        });
+        return found ? ["$", scopeIdx, parameterIdx] : ["$", node.name];
     };
     BonsaiVisitor.prototype.visitBinary = function (node) {
         var i = "";
         switch (node.nodeType) {
-            case 3 /* Add */:
+            case ExpressionType.Add:
                 i = "+";
                 break;
-            case 4 /* Subtract */:
+            case ExpressionType.Subtract:
                 i = "-";
                 break;
-            case 5 /* Multiply */:
+            case ExpressionType.Multiply:
                 i = "*";
                 break;
-            case 6 /* Divide */:
+            case ExpressionType.Divide:
                 i = "/";
                 break;
-            case 7 /* Modulo */:
+            case ExpressionType.Modulo:
                 i = "%";
                 break;
-            case 8 /* And */:
+            case ExpressionType.And:
                 i = "&";
                 break;
-            case 9 /* Or */:
+            case ExpressionType.Or:
                 i = "|";
                 break;
-            case 10 /* AndAlso */:
+            case ExpressionType.AndAlso:
                 i = "&&";
                 break;
-            case 11 /* OrElse */:
+            case ExpressionType.OrElse:
                 i = "||";
                 break;
-            case 12 /* ExclusiveOr */:
+            case ExpressionType.ExclusiveOr:
                 i = "^";
                 break;
-            case 13 /* Equal */:
+            case ExpressionType.Equal:
                 i = "===";
                 break;
-            case 14 /* NotEqual */:
+            case ExpressionType.NotEqual:
                 i = "!==";
                 break;
-            case 15 /* LessThan */:
+            case ExpressionType.LessThan:
                 i = "<";
                 break;
-            case 16 /* LessThanOrEqual */:
+            case ExpressionType.LessThanOrEqual:
                 i = "<=";
                 break;
-            case 17 /* GreaterThan */:
+            case ExpressionType.GreaterThan:
                 i = ">";
                 break;
-            case 18 /* GreaterThanOrEqual */:
+            case ExpressionType.GreaterThanOrEqual:
                 i = ">=";
                 break;
-            case 19 /* LeftShift */:
+            case ExpressionType.LeftShift:
                 i = "<<";
                 break;
-            case 20 /* RightShift */:
+            case ExpressionType.RightShift:
                 i = ">>";
+                break;
+            case ExpressionType.Assign:
+                i = "=";
+                break;
+            case ExpressionType.AddAssign:
+                i = "+=";
+                break;
+            case ExpressionType.SubtractAssign:
+                i = "-=";
+                break;
+            case ExpressionType.MultiplyAssign:
+                i = "*=";
+                break;
+            case ExpressionType.DivideAssign:
+                i = "/=";
+                break;
+            case ExpressionType.ModuloAssign:
+                i = "%=";
+                break;
+            case ExpressionType.LeftShiftAssign:
+                i = "<<=";
+                break;
+            case ExpressionType.RightShiftAssign:
+                i = ">>=";
+                break;
+            case ExpressionType.AndAssign:
+                i = "&=";
+                break;
+            case ExpressionType.OrAssign:
+                i = "|=";
+                break;
+            case ExpressionType.ExclusiveOrAssign:
+                i = "^=";
                 break;
         }
         return [i, this.visit(node.left), this.visit(node.right)];
@@ -1073,17 +1316,32 @@ var BonsaiVisitor = (function (_super) {
     BonsaiVisitor.prototype.visitUnary = function (node) {
         var i = "";
         switch (node.nodeType) {
-            case 23 /* Negate */:
+            case ExpressionType.Negate:
                 i = "-";
                 break;
-            case 24 /* UnaryPlus */:
+            case ExpressionType.UnaryPlus:
                 i = "+";
                 break;
-            case 22 /* Not */:
+            case ExpressionType.Not:
                 i = "!";
                 break;
-            case 25 /* OnesComplement */:
+            case ExpressionType.OnesComplement:
                 i = "~";
+                break;
+            case ExpressionType.PostDecrementAssign:
+                i = "a--";
+                break;
+            case ExpressionType.PostIncrementAssign:
+                i = "a++";
+                break;
+            case ExpressionType.PreDecrementAssign:
+                i = "--a";
+                break;
+            case ExpressionType.PreIncrementAssign:
+                i = "++a";
+                break;
+            case ExpressionType.Quote:
+                i = "`";
                 break;
         }
         return [i, this.visit(node.operand)];
@@ -1092,7 +1350,13 @@ var BonsaiVisitor = (function (_super) {
         return ["?:", this.visit(node.test), this.visit(node.ifTrue), this.visit(node.ifFalse)];
     };
     BonsaiVisitor.prototype.visitLambda = function (node) {
-        return ["=>", this.visit(node.body), this.visitMany(node.parameters)];
+        var parameters = this.visitMany(node.parameters);
+        var scope = [];
+        node.parameters.forEach(function (p) { return scope.push(p); });
+        this.scopes.push(scope);
+        var body = this.visit(node.body);
+        this.scopes.pop();
+        return ["=>", body, parameters];
     };
     BonsaiVisitor.prototype.visitInvoke = function (node) {
         var expression = this.visit(node.expression);
@@ -1122,5 +1386,247 @@ var BonsaiVisitor = (function (_super) {
         throw new Error("not implemented");
     };
     return BonsaiVisitor;
-})(ExpressionVisitorGeneric);
+}(ExpressionVisitorGeneric));
+var BonsaiParser = (function () {
+    function BonsaiParser() {
+        this.env = [];
+    }
+    BonsaiParser.prototype.visit = function (node) {
+        var discriminator = node[0];
+        switch (discriminator) {
+            case Discriminators.Constant:
+                return this.visitConstant(node);
+            case Discriminators.OnesComplement:
+                return this.visitOnesComplement(node);
+            case Discriminators.Not:
+                return this.visitNot(node);
+            case Discriminators.Quote:
+                return this.visitQuote(node);
+            case Discriminators.Plus:
+                return this.visitPlus(node);
+            case Discriminators.Minus:
+                return this.visitMinus(node);
+            case Discriminators.Multiply:
+                return this.visitMultiply(node);
+            case Discriminators.Divide:
+                return this.visitDivide(node);
+            case Discriminators.Modulo:
+                return this.visitModulo(node);
+            case Discriminators.RightShift:
+                return this.visitRightShift(node);
+            case Discriminators.LeftShift:
+                return this.visitLeftShift(node);
+            case Discriminators.LessThan:
+                return this.visitLessThan(node);
+            case Discriminators.LessThanOrEqual:
+                return this.visitLessThanOrEqual(node);
+            case Discriminators.GreaterThan:
+                return this.visitGreaterThan(node);
+            case Discriminators.GreaterThanOrEqual:
+                return this.visitGreaterThanOrEqual(node);
+            case Discriminators.Equal:
+                return this.visitEqual(node);
+            case Discriminators.NotEqual:
+                return this.visitNotEqual(node);
+            case Discriminators.And:
+                return this.visitAnd(node);
+            case Discriminators.AndAlso:
+                return this.visitAndAlso(node);
+            case Discriminators.Or:
+                return this.visitOr(node);
+            case Discriminators.OrElse:
+                return this.visitOrElse(node);
+            case Discriminators.ExclusiveOr:
+                return this.visitExclusiveOr(node);
+            case Discriminators.Conditional:
+                return this.visitConditional(node);
+            case Discriminators.Lambda:
+                return this.visitLambda(node);
+            case Discriminators.Parameter:
+                return this.visitParameter(node);
+            case Discriminators.Index:
+                return this.visitIndex(node);
+            case Discriminators.Invocation:
+                return this.visitInvocation(node);
+            case Discriminators.MemberAccess:
+                return this.visitMemberAccess(node);
+            case Discriminators.MethodCall:
+                return this.visitMethodCall(node);
+            case Discriminators.New:
+                return this.visitNew(node);
+            case Discriminators.MemberInit:
+                return this.visitMemberInit(node);
+            case Discriminators.ListInit:
+                return this.visitListInit(node);
+            case Discriminators.NewArrayInit:
+                return this.visitNewArrayInit(node);
+            case Discriminators.NewArrayBounds:
+                return this.visitNewArrayBounds(node);
+            case Discriminators.ArrayLength:
+                return this.visitArrayLength(node);
+            case Discriminators.ArrayIndex:
+                return this.visitArrayIndex(node);
+            case Discriminators.Assign:
+                return this.visitAssign(node);
+            case Discriminators.Block:
+                return this.visitBlock(node);
+            default:
+                throw new Error('not implemented');
+        }
+    };
+    BonsaiParser.prototype.visitMany = function (nodes) {
+        var _this = this;
+        return nodes.map(function (n) { return _this.visit(n); });
+    };
+    BonsaiParser.prototype.visitConstant = function (node) {
+        return Expression.constant(node[1]);
+    };
+    BonsaiParser.prototype.visitOnesComplement = function (node) {
+        return Expression.onesComplement(this.visit(node[1]));
+    };
+    BonsaiParser.prototype.visitNot = function (node) {
+        return Expression.not(this.visit(node[1]));
+    };
+    BonsaiParser.prototype.visitQuote = function (node) {
+        return Expression.quote(this.visit(node[1]));
+    };
+    BonsaiParser.prototype.visitPlus = function (node) {
+        if (node.length == 2) {
+            return Expression.unaryPlus(this.visit(node[1]));
+        }
+        else if (node.length == 3) {
+            return Expression.add(this.visit(node[1]), this.visit(node[2]));
+        }
+        else {
+            throw new Error('not implemented');
+        }
+    };
+    BonsaiParser.prototype.visitMinus = function (node) {
+        if (node.length == 2) {
+            return Expression.negate(this.visit(node[1]));
+        }
+        else if (node.length == 3) {
+            return Expression.subtract(this.visit(node[1]), this.visit(node[2]));
+        }
+        else {
+            throw new Error('not implemented');
+        }
+    };
+    BonsaiParser.prototype.visitMultiply = function (node) {
+        return Expression.multiply(this.visit(node[1]), this.visit(node[2]));
+    };
+    BonsaiParser.prototype.visitDivide = function (node) {
+        return Expression.divide(this.visit(node[1]), this.visit(node[1]));
+    };
+    BonsaiParser.prototype.visitModulo = function (node) {
+        return Expression.modulo(this.visit(node[1]), this.visit(node[2]));
+    };
+    BonsaiParser.prototype.visitRightShift = function (node) {
+        return Expression.rightShift(this.visit(node[1]), this.visit(node[2]));
+    };
+    BonsaiParser.prototype.visitLeftShift = function (node) {
+        return Expression.leftShift(this.visit(node[1]), this.visit(node[2]));
+    };
+    BonsaiParser.prototype.visitLessThan = function (node) {
+        return Expression.lessThan(this.visit(node[1]), this.visit(node[2]));
+    };
+    BonsaiParser.prototype.visitLessThanOrEqual = function (node) {
+        return Expression.lessThanOrEqual(this.visit(node[1]), this.visit(node[2]));
+    };
+    BonsaiParser.prototype.visitGreaterThan = function (node) {
+        return Expression.greaterThan(this.visit(node[1]), this.visit(node[2]));
+    };
+    BonsaiParser.prototype.visitGreaterThanOrEqual = function (node) {
+        return Expression.greaterThanOrEqual(this.visit(node[1]), this.visit(node[2]));
+    };
+    BonsaiParser.prototype.visitEqual = function (node) {
+        return Expression.equal(this.visit(node[1]), this.visit(node[2]));
+    };
+    BonsaiParser.prototype.visitNotEqual = function (node) {
+        return Expression.notEqual(this.visit(node[1]), this.visit(node[2]));
+    };
+    BonsaiParser.prototype.visitAnd = function (node) {
+        return Expression.and(this.visit(node[1]), this.visit(node[2]));
+    };
+    BonsaiParser.prototype.visitAndAlso = function (node) {
+        return Expression.andAlso(this.visit(node[1]), this.visit(node[2]));
+    };
+    BonsaiParser.prototype.visitOr = function (node) {
+        return Expression.or(this.visit(node[1]), this.visit(node[2]));
+    };
+    BonsaiParser.prototype.visitOrElse = function (node) {
+        return Expression.orElse(this.visit(node[1]), this.visit(node[2]));
+    };
+    BonsaiParser.prototype.visitExclusiveOr = function (node) {
+        return Expression.exclusiveOr(this.visit(node[1]), this.visit(node[2]));
+    };
+    BonsaiParser.prototype.visitConditional = function (node) {
+        return Expression.condition(this.visit(node[1]), this.visit(node[2]), this.visit(node[3]));
+    };
+    BonsaiParser.prototype.visitLambda = function (node) {
+        var parameters = node[2].map(function (p) { return Expression.parameter(p[1]); });
+        this.env.push(parameters);
+        var body = this.visit(node[1]);
+        this.env.pop();
+        return Expression.lambda(body, parameters);
+    };
+    BonsaiParser.prototype.visitParameter = function (node) {
+        if (node.length == 3) {
+            return this.env[node[1]][node[2]];
+        }
+        else if (node.length == 2) {
+            return Expression.parameter(node[1]);
+        }
+        else {
+            throw new Error('not implemented');
+        }
+    };
+    BonsaiParser.prototype.visitIndex = function (node) {
+        var d = node[0], e = node[1], args = node.slice(2);
+        return Expression.index(this.visit(e), this.visitMany(args));
+    };
+    BonsaiParser.prototype.visitInvocation = function (node) {
+        var d = node[0], e = node[1], args = node.slice(2);
+        return Expression.invoke(this.visit(e), this.visitMany(args));
+    };
+    BonsaiParser.prototype.visitMemberAccess = function (node) {
+        return Expression.member(this.visit(node[2]), node[1]);
+    };
+    BonsaiParser.prototype.visitMethodCall = function (node) {
+        var d = node[0], m = node[1], e = node[2], args = node.slice(3);
+        return Expression.functionCall(this.visit(e), m, this.visitMany(args));
+    };
+    BonsaiParser.prototype.visitNew = function (node) {
+        throw new Error('not implemented');
+    };
+    BonsaiParser.prototype.visitMemberInit = function (node) {
+        throw new Error('not implemented');
+    };
+    BonsaiParser.prototype.visitListInit = function (node) {
+        throw new Error('not implemented');
+    };
+    BonsaiParser.prototype.visitNewArrayInit = function (node) {
+        throw new Error('not implemented');
+    };
+    BonsaiParser.prototype.visitNewArrayBounds = function (node) {
+        throw new Error('not implemented');
+    };
+    BonsaiParser.prototype.visitArrayLength = function (node) {
+        throw new Error('not implemented');
+    };
+    BonsaiParser.prototype.visitArrayIndex = function (node) {
+        throw new Error('not implemented');
+    };
+    BonsaiParser.prototype.visitAssign = function (node) {
+        return Expression.assign(this.visit(node[1]), this.visit(node[2]));
+    };
+    BonsaiParser.prototype.visitBlock = function (node) {
+        var variables = node[1].map(function (v) { return Expression.parameter(v[0]); });
+        this.env.push(variables);
+        var expressions = this.visitMany(node[2]);
+        this.env.pop();
+        return Expression.block(variables, expressions);
+    };
+    return BonsaiParser;
+}());
 //# sourceMappingURL=compiler.js.map

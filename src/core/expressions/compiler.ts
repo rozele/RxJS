@@ -21,6 +21,10 @@ class Expression {
         return new BonsaiVisitor().visit(this);
     }
 
+    static block(variables: ParameterExpression[], expressions: Expression[]) {
+        return new BlockExpression(variables, expressions);
+    }
+
     static constant(value: any): ConstantExpression {
         return new ConstantExpression(value);
     }
@@ -105,6 +109,54 @@ class Expression {
         return new BinaryExpression(ExpressionType.RightShift, left, right);
     }
 
+    static arrayIndex(left: Expression, right: Expression): BinaryExpression {
+        return new BinaryExpression(ExpressionType.ArrayIndex, left, right);
+    }
+
+    static assign(left: Expression, right: Expression): BinaryExpression {
+        return new BinaryExpression(ExpressionType.Assign, left, right);
+    }
+
+    static addAssign(left: Expression, right: Expression): BinaryExpression {
+        return new BinaryExpression(ExpressionType.AddAssign, left, right);
+    }
+
+    static subtractAssign(left: Expression, right: Expression): BinaryExpression {
+        return new BinaryExpression(ExpressionType.SubtractAssign, left, right);
+    }
+
+    static multiplyAssign(left: Expression, right: Expression): BinaryExpression {
+        return new BinaryExpression(ExpressionType.MultiplyAssign, left, right);
+    }
+
+    static divideAssign(left: Expression, right: Expression): BinaryExpression {
+        return new BinaryExpression(ExpressionType.DivideAssign, left, right);
+    }
+
+    static moduloAssign(left: Expression, right: Expression): BinaryExpression {
+        return new BinaryExpression(ExpressionType.ModuloAssign, left, right);
+    }
+
+    static leftShiftAssign(left: Expression, right: Expression): BinaryExpression {
+        return new BinaryExpression(ExpressionType.LeftShiftAssign, left, right);
+    }
+
+    static rightShiftAssign(left: Expression, right: Expression): BinaryExpression {
+        return new BinaryExpression(ExpressionType.RightShiftAssign, left, right);
+    }
+
+    static andAssign(left: Expression, right: Expression): BinaryExpression {
+        return new BinaryExpression(ExpressionType.AndAssign, left, right);
+    }
+
+    static orAssign(left: Expression, right: Expression): BinaryExpression {
+        return new BinaryExpression(ExpressionType.OrAssign, left, right);
+    }
+    
+    static exclusiveOrAssign(left: Expression, right: Expression): BinaryExpression {
+        return new BinaryExpression(ExpressionType.ExclusiveOrAssign, left, right);
+    }
+
     static not(operand: Expression): UnaryExpression {
         return new UnaryExpression(ExpressionType.Not, operand);
     }
@@ -121,19 +173,39 @@ class Expression {
         return new UnaryExpression(ExpressionType.OnesComplement, operand);
     }
 
-    static lambda<T extends Function>(body: Expression, ...parameters: ParameterExpression[]): LambdaExpression<T> {
+    static postDecrementAssign(operand: Expression): UnaryExpression {
+        return new UnaryExpression(ExpressionType.PostDecrementAssign, operand);
+    }
+
+    static postIncrementAssign(operand: Expression): UnaryExpression {
+        return new UnaryExpression(ExpressionType.PostIncrementAssign, operand);
+    }
+
+    static preDecrementAssign(operand: Expression): UnaryExpression {
+        return new UnaryExpression(ExpressionType.PreDecrementAssign, operand);
+    }
+
+    static preIncrementAssign(operand: Expression): UnaryExpression {
+        return new UnaryExpression(ExpressionType.PreIncrementAssign, operand);
+    }
+
+    static quote(operand: Expression): UnaryExpression {
+        return new UnaryExpression(ExpressionType.Quote, operand);
+    }
+
+    static lambda<T extends Function>(body: Expression, parameters: ParameterExpression[]): LambdaExpression<T> {
         return new LambdaExpression<T>(body, parameters);
     }
 
-    static invoke(expression: Expression, ...args: Expression[]): InvocationExpression {
+    static invoke(expression: Expression, args: Expression[]): InvocationExpression {
         return new InvocationExpression(expression, args);
     }
 
-    static new(typeName: string, ...args: Expression[]): NewExpression {
+    static new(typeName: string, args: Expression[]): NewExpression {
         return new NewExpression(typeName, args);
     }
 
-    static functionCall(obj: Expression, methodName: string, ...args: Expression[]): FunctionCallExpression {
+    static functionCall(obj: Expression, methodName: string, args: Expression[]): FunctionCallExpression {
         return new FunctionCallExpression(obj, methodName, args);
     }
 
@@ -141,7 +213,7 @@ class Expression {
         return new MemberExpression(obj, memberName);
     }
 
-    static index(obj: Expression, ...args: Expression[]): IndexExpression {
+    static index(obj: Expression, args: Expression[]): IndexExpression {
         return new IndexExpression(obj, args);
     }
 }
@@ -153,6 +225,8 @@ class ExpressionVisitorGeneric<T> {
         }
         return node.acceptGeneric(this);
     }
+
+    visitBlock(node: BlockExpression): T { throw new Error("not implemented"); }
 
     visitConstant(node: ConstantExpression): T { throw new Error("not implemented"); }
 
@@ -176,6 +250,8 @@ class ExpressionVisitorGeneric<T> {
 
     visitIndex(node: IndexExpression): T { throw new Error("not implemented"); }
 
+    visitExtension(node: Expression): T { throw new Error("not implemented"); }
+
     visitMany<E extends Expression>(nodes: E[]): T[] {
         var res = new Array<T>(nodes.length);
 
@@ -195,6 +271,10 @@ class ExpressionVisitor {
             return null;
         }
         return node.accept(this);
+    }
+
+    visitBlock(node: BlockExpression): Expression {
+        return node;
     }
 
     visitConstant(node: ConstantExpression): Expression {
@@ -241,6 +321,10 @@ class ExpressionVisitor {
         return node.update(this.visit(node.obj), this.visitMany(node.args));
     }
 
+    visitExtension(node: Expression): Expression {
+        throw new Error("not implemented");
+    }
+
     visitMany<T extends Expression>(nodes: T[]): T[] {
         var res = new Array<T>(nodes.length);
 
@@ -254,6 +338,41 @@ class ExpressionVisitor {
     }
 }
 
+class BlockExpression extends Expression {
+    _variables: ParameterExpression[];
+    _expressions: Expression[];
+
+    constructor(variables: ParameterExpression[], expressions: Expression[]) {
+        super(ExpressionType.Block);
+        this._variables = variables;
+        this._expressions = expressions;
+    }
+
+    get variables(): ParameterExpression[] {
+        return this._variables;
+    }
+
+    get expressions(): Expression[] {
+        return this._expressions;
+    }
+
+    accept(visitor: ExpressionVisitor): Expression {
+        return visitor.visitBlock(this);
+    }
+
+    acceptGeneric<T>(visitor: ExpressionVisitorGeneric<T>): T {
+        return visitor.visitBlock(this);
+    }
+
+    update(variables: ParameterExpression[], expressions: Expression[]) {
+        if (variables !== this._variables || expressions !== this._expressions) {
+            return new BlockExpression(variables, expressions);
+        }
+
+        return this;
+    }
+}
+
 class ConstantExpression extends Expression {
     _value: any;
 
@@ -263,6 +382,27 @@ class ConstantExpression extends Expression {
     }
 
     get value(): any {
+        return this._value;
+    }
+
+    accept(visitor: ExpressionVisitor): Expression {
+        return visitor.visitConstant(this);
+    }
+
+    acceptGeneric<T>(visitor: ExpressionVisitorGeneric<T>): T {
+        return visitor.visitConstant(this);
+    }
+}
+
+class LiteralConstantExpression extends Expression {
+    _value: string;
+
+    constructor(value: string) {
+        super(ExpressionType.Constant);
+        this._value = value;
+    }
+
+    get value(): string {
         return this._value;
     }
 
@@ -293,6 +433,10 @@ class ParameterExpression extends Expression {
 
     acceptGeneric<T>(visitor: ExpressionVisitorGeneric<T>): T {
         return visitor.visitParameter(this);
+    }
+
+    let<T>(selector: (p: ParameterExpression) => T): T {
+        return selector(this);
     }
 }
 
@@ -654,6 +798,22 @@ class LambdaCompiler extends ExpressionVisitor {
         return this._stack[0];
     }
 
+    visitBlock(node: BlockExpression): Expression {
+        var vars = node.variables.map(v => `var ${v.name};`);
+        this.visitMany(node.expressions);
+
+        var n = node.expressions.length;
+        var exprs = new Array<string>(n);
+        for (var i = 0; i < n; ++i) {
+            exprs[n - i - 1] = this._stack.pop();
+        }
+
+        var varList = vars.join(' ');
+        var exprList = exprs.join('; ');
+        this._stack.push("{ " + varList + " " + exprList + "; }");
+        return node;
+    }
+
     visitConstant(node: ConstantExpression): Expression {
         var value = "";
 
@@ -765,6 +925,41 @@ class LambdaCompiler extends ExpressionVisitor {
             case ExpressionType.RightShift:
                 i = ">>";
                 break;
+            case ExpressionType.Assign:
+                i = "=";
+                break;
+            case ExpressionType.AddAssign:
+                i = "+=";
+                break;
+            case ExpressionType.SubtractAssign:
+                i = "-=";
+                break;
+            case ExpressionType.MultiplyAssign:
+                i = "*=";
+                break;
+            case ExpressionType.DivideAssign:
+                i = "/=";
+                break;
+            case ExpressionType.ModuloAssign:
+                i = "%=";
+                break;
+            case ExpressionType.LeftShiftAssign:
+                i = "<<=";
+                break;
+            case ExpressionType.RightShiftAssign:
+                i = ">>=";
+                break;
+            case ExpressionType.AndAssign:
+                i = "&=";
+                break;
+            case ExpressionType.OrAssign:
+                i = "|=";
+                break;
+            case ExpressionType.ExclusiveOrAssign:
+                i = "^=";
+                break;
+            default:
+                throw new Error("Invalid binary token.");
         }
 
         var res = "(" + l + " " + i + " " + r + ")";
@@ -809,7 +1004,7 @@ class LambdaCompiler extends ExpressionVisitor {
 
         var allArgs = args.join(", ");
 
-        var res = "function(" + allArgs + ") { return " + body + "; }";
+        var res = "function(" + allArgs + ") { " + body + "; }";
 
         this._stack.push(res);
 
@@ -960,6 +1155,7 @@ class FreeVariableScanner extends ExpressionVisitor {
 }
 
 enum ExpressionType {
+    Block,
     Constant,
     Parameter,
     Lambda,
@@ -981,16 +1177,34 @@ enum ExpressionType {
     GreaterThanOrEqual,
     LeftShift,
     RightShift,
+    ArrayIndex,
+    Assign,
+    AddAssign,
+    SubtractAssign,
+    ModuloAssign,
+    MultiplyAssign,
+    DivideAssign,
+    LeftShiftAssign,
+    RightShiftAssign,
+    AndAssign,
+    OrAssign,
+    ExclusiveOrAssign,
     Invoke,
     Not,
     Negate,
     UnaryPlus,
     OnesComplement,
+    PostDecrementAssign,
+    PostIncrementAssign,
+    PreDecrementAssign,
+    PreIncrementAssign,
+    Quote,
     Condition,
     New,
     Call,
     Member,
     Index,
+    Extension,
 }
 
 class Binder extends ExpressionVisitor {
@@ -1032,6 +1246,12 @@ class Binder extends ExpressionVisitor {
 }
 
 class PrintVisitor extends ExpressionVisitorGeneric<string> {
+    visitBlock(node: BlockExpression): string {
+        var variables = this.visitMany(node.variables);
+        var expressions = this.visitMany(node.expressions);
+        return "Block([" + variables.join(", ") + "], " + expressions + ")";
+    }
+
     visitConstant(node: ConstantExpression): string {
         return "Constant(" + node.value + ")";
     }
@@ -1099,13 +1319,75 @@ class PrintVisitor extends ExpressionVisitorGeneric<string> {
     }
 }
 
+class Discriminators {
+    static Constant = ":";
+    static OnesComplement = "~";
+    static Not = "!";
+    static Quote = "`";
+    static Plus = "+";
+    static Minus = "-";
+    static Multiply = "*";
+    static Divide = "/";
+    static Modulo = "%";
+    static Power = "^^";
+    static RightShift = ">>";
+    static LeftShift = "<<";
+    static LessThan = "<";
+    static LessThanOrEqual = "<=";
+    static GreaterThan = ">";
+    static GreaterThanOrEqual = ">=";
+    static Equal = "==";
+    static NotEqual = "!=";
+    static And = "&";
+    static AndAlso = "&&";
+    static Or = "|";
+    static OrElse = "||";
+    static ExclusiveOr = "^";
+    static Conditional = "?:";
+    static Lambda = "=>";
+    static Parameter = "$";
+    static Index = ".[]";
+    static Invocation = "()";
+    static MemberAccess = ".";
+    static MethodCall = ".()";
+    static New = "new";
+    static MemberInit = "{.}";
+    static ListInit = "{+}";
+    static NewArrayInit = "new[]";
+    static NewArrayBounds = "new[*]";
+    static ArrayLength = "#";
+    static ArrayIndex = "[]";
+    static Assign = "=";
+    static Block = "{...}";
+}
+
 class BonsaiVisitor extends ExpressionVisitorGeneric<any> {
+    scopes: ParameterExpression[][] = [];
+
+    visitBlock(node: BlockExpression): any {
+        return [ "{...}", node.variables.map(v => v.name), this.visitMany(node.expressions) ];
+    }
+
     visitConstant(node: ConstantExpression): any {
         return [ ":", node.value ];
     }
 
     visitParameter(node: ParameterExpression): any {
-        return ["$", node.name];
+        let parameterIdx: number;
+        let scopeIdx: number;
+        let found = false;
+
+        this.scopes.forEach((scope, i) => {
+            scope.forEach((p, j) => {
+                if (node === p) {
+                    found = true;
+                    scopeIdx = i;
+                    parameterIdx = j;
+                }
+            })
+        });
+
+        return found ? ["$", scopeIdx, parameterIdx] : ["$", node.name];
     }
 
     visitBinary(node: BinaryExpression): any {
@@ -1166,6 +1448,39 @@ class BonsaiVisitor extends ExpressionVisitorGeneric<any> {
             case ExpressionType.RightShift:
                 i = ">>";
                 break;
+            case ExpressionType.Assign:
+                i = "=";
+                break;
+            case ExpressionType.AddAssign:
+                i = "+=";
+                break;
+            case ExpressionType.SubtractAssign:
+                i = "-=";
+                break;
+            case ExpressionType.MultiplyAssign:
+                i = "*=";
+                break;
+            case ExpressionType.DivideAssign:
+                i = "/=";
+                break;
+            case ExpressionType.ModuloAssign:
+                i = "%=";
+                break;
+            case ExpressionType.LeftShiftAssign:
+                i = "<<=";
+                break;
+            case ExpressionType.RightShiftAssign:
+                i = ">>=";
+                break;
+            case ExpressionType.AndAssign:
+                i = "&=";
+                break;
+            case ExpressionType.OrAssign:
+                i = "|=";
+                break;
+            case ExpressionType.ExclusiveOrAssign:
+                i = "^=";
+                break;
         }
 
         return [ i, this.visit(node.left), this.visit(node.right) ];
@@ -1187,6 +1502,21 @@ class BonsaiVisitor extends ExpressionVisitorGeneric<any> {
             case ExpressionType.OnesComplement:
                 i = "~";
                 break;
+            case ExpressionType.PostDecrementAssign:
+                i = "a--";
+                break;
+            case ExpressionType.PostIncrementAssign:
+                i = "a++";
+                break;
+            case ExpressionType.PreDecrementAssign:
+                i = "--a";
+                break;
+            case ExpressionType.PreIncrementAssign:
+                i = "++a";
+                break;
+            case ExpressionType.Quote:
+                i = "`";
+                break;
         }
 
         return [i, this.visit(node.operand)];
@@ -1197,7 +1527,13 @@ class BonsaiVisitor extends ExpressionVisitorGeneric<any> {
     }
 
     visitLambda<T extends Function>(node: LambdaExpression<T>): any {
-        return ["=>", this.visit(node.body), this.visitMany(node.parameters)];
+        var parameters = this.visitMany(node.parameters);
+        var scope: ParameterExpression[] = [];
+        node.parameters.forEach(p => scope.push(p));
+        this.scopes.push(scope);
+        var body = this.visit(node.body);
+        this.scopes.pop();
+        return ["=>", body, parameters];
     }
 
     visitInvoke(node: InvocationExpression): any {
@@ -1230,5 +1566,278 @@ class BonsaiVisitor extends ExpressionVisitorGeneric<any> {
 
     visitIndex(node: IndexExpression): any {
         throw new Error("not implemented");
+    }
+}
+
+class BonsaiParser {
+    env: ParameterExpression[][] = [];
+
+    visit(node: any[]): Expression {
+        const discriminator:string = node[0];
+        switch (discriminator) {
+            case Discriminators.Constant:
+                return this.visitConstant(node);
+            case Discriminators.OnesComplement:
+                return this.visitOnesComplement(node);
+            case Discriminators.Not:
+                return this.visitNot(node);
+            case Discriminators.Quote:
+                return this.visitQuote(node);
+            case Discriminators.Plus:
+                return this.visitPlus(node);
+            case Discriminators.Minus:
+                return this.visitMinus(node);
+            case Discriminators.Multiply:
+                return this.visitMultiply(node);
+            case Discriminators.Divide:
+                return this.visitDivide(node);
+            case Discriminators.Modulo:
+                return this.visitModulo(node);
+            case Discriminators.RightShift:
+                return this.visitRightShift(node);
+            case Discriminators.LeftShift:
+                return this.visitLeftShift(node);
+            case Discriminators.LessThan:
+                return this.visitLessThan(node);
+            case Discriminators.LessThanOrEqual:
+                return this.visitLessThanOrEqual(node);
+            case Discriminators.GreaterThan:
+                return this.visitGreaterThan(node);
+            case Discriminators.GreaterThanOrEqual:
+                return this.visitGreaterThanOrEqual(node);
+            case Discriminators.Equal:
+                return this.visitEqual(node);
+            case Discriminators.NotEqual:
+                return this.visitNotEqual(node);
+            case Discriminators.And:
+                return this.visitAnd(node);
+            case Discriminators.AndAlso:
+                return this.visitAndAlso(node);
+            case Discriminators.Or:
+                return this.visitOr(node);
+            case Discriminators.OrElse:
+                return this.visitOrElse(node);
+            case Discriminators.ExclusiveOr:
+                return this.visitExclusiveOr(node);
+            case Discriminators.Conditional:
+                return this.visitConditional(node);
+            case Discriminators.Lambda:
+                return this.visitLambda(node);
+            case Discriminators.Parameter:
+                return this.visitParameter(node);
+            case Discriminators.Index:
+                return this.visitIndex(node);
+            case Discriminators.Invocation:
+                return this.visitInvocation(node);
+            case Discriminators.MemberAccess:
+                return this.visitMemberAccess(node);
+            case Discriminators.MethodCall:
+                return this.visitMethodCall(node);
+            case Discriminators.New:
+                return this.visitNew(node);
+            case Discriminators.MemberInit:
+                return this.visitMemberInit(node);
+            case Discriminators.ListInit:
+                return this.visitListInit(node);
+            case Discriminators.NewArrayInit:
+                return this.visitNewArrayInit(node);
+            case Discriminators.NewArrayBounds:
+                return this.visitNewArrayBounds(node);
+            case Discriminators.ArrayLength:
+                return this.visitArrayLength(node);
+            case Discriminators.ArrayIndex:
+                return this.visitArrayIndex(node);
+            case Discriminators.Assign:
+                return this.visitAssign(node);
+            case Discriminators.Block:
+                return this.visitBlock(node);
+            default:
+                throw new Error('not implemented');
+        }
+    }
+
+    visitMany(nodes: any[]) {
+        return nodes.map(n => this.visit(n));
+    }
+
+    visitConstant(node: any[]) {
+        return Expression.constant(node[1]);
+    }
+
+    visitOnesComplement(node: any[]) {
+        return Expression.onesComplement(this.visit(node[1]));
+    }
+
+    visitNot(node: any[]) {
+        return Expression.not(this.visit(node[1]));
+    }
+
+    visitQuote(node: any[]) {
+        return Expression.quote(this.visit(node[1]));
+    }
+
+    visitPlus(node: any[]): Expression {
+        if (node.length == 2) {
+            return Expression.unaryPlus(this.visit(node[1]));
+        } else if (node.length == 3) {
+            return Expression.add(this.visit(node[1]), this.visit(node[2]));
+        } else {
+            throw new Error('not implemented');
+        }
+    }
+
+    visitMinus(node: any[]): Expression {
+        if (node.length == 2) {
+            return Expression.negate(this.visit(node[1]));
+        } else if (node.length == 3) {
+            return Expression.subtract(this.visit(node[1]), this.visit(node[2]));
+        } else {
+            throw new Error('not implemented');
+        }
+    }
+
+    visitMultiply(node: any[]) {
+        return Expression.multiply(this.visit(node[1]), this.visit(node[2]));
+    }
+
+    visitDivide(node: any[]) {
+        return Expression.divide(this.visit(node[1]), this.visit(node[1]));
+    }
+
+    visitModulo(node: any[]) {
+        return Expression.modulo(this.visit(node[1]), this.visit(node[2]));
+    }
+
+    visitRightShift(node: any[]) {
+        return Expression.rightShift(this.visit(node[1]), this.visit(node[2]));
+    }
+
+    visitLeftShift(node: any[]) {
+        return Expression.leftShift(this.visit(node[1]), this.visit(node[2]));
+    }
+
+    visitLessThan(node: any[]) {
+        return Expression.lessThan(this.visit(node[1]), this.visit(node[2]));
+    }
+
+    visitLessThanOrEqual(node: any[]) {
+        return Expression.lessThanOrEqual(this.visit(node[1]), this.visit(node[2]));
+    }
+
+    visitGreaterThan(node: any[]) {
+        return Expression.greaterThan(this.visit(node[1]), this.visit(node[2]));
+    }
+
+    visitGreaterThanOrEqual(node: any[]) {
+        return Expression.greaterThanOrEqual(this.visit(node[1]), this.visit(node[2]));
+    }
+
+    visitEqual(node: any[]) {
+        return Expression.equal(this.visit(node[1]), this.visit(node[2]));
+    }
+
+    visitNotEqual(node: any[]) {
+        return Expression.notEqual(this.visit(node[1]), this.visit(node[2]));
+    }
+
+    visitAnd(node: any[]) {
+        return Expression.and(this.visit(node[1]), this.visit(node[2]));
+    }
+
+    visitAndAlso(node: any[]) {
+        return Expression.andAlso(this.visit(node[1]), this.visit(node[2]));
+    }
+
+    visitOr(node: any[]) {
+        return Expression.or(this.visit(node[1]), this.visit(node[2]));
+    }
+
+    visitOrElse(node: any[]) {
+        return Expression.orElse(this.visit(node[1]), this.visit(node[2]));
+    }
+
+    visitExclusiveOr(node: any[]) {
+        return Expression.exclusiveOr(this.visit(node[1]), this.visit(node[2]));
+    }
+
+    visitConditional(node: any[]) {
+        return Expression.condition(this.visit(node[1]), this.visit(node[2]), this.visit(node[3]))
+    }
+
+    visitLambda(node: any[]) {
+        const parameters = node[2].map(p => Expression.parameter(p[1]));
+        this.env.push(parameters);
+        const body = this.visit(node[1]);
+        this.env.pop();
+        return Expression.lambda(body, parameters);
+    }
+
+    visitParameter(node: any[]) {
+        if (node.length == 3) {
+            return this.env[node[1]][node[2]];
+        } else if (node.length == 2) {
+            return Expression.parameter(node[1]);
+        } else {
+            throw new Error('not implemented');
+        }
+    }
+
+    visitIndex(node: any[]): Expression {
+        const [d, e, ...args] = node;
+        return Expression.index(this.visit(e), this.visitMany(args));
+    }
+
+    visitInvocation(node: any[]) {
+        const [d, e, ...args] = node;
+        return Expression.invoke(this.visit(e), this.visitMany(args));
+    }
+
+    visitMemberAccess(node: any[]) {
+        return Expression.member(this.visit(node[2]), node[1]);
+    }
+
+    visitMethodCall(node: any[]) {
+        const [d, m, e, ...args] = node;
+        return Expression.functionCall(this.visit(e), m, this.visitMany(args));
+    }
+
+    visitNew(node: any[]): Expression {
+        throw new Error('not implemented');
+    }
+
+    visitMemberInit(node: any[]): Expression {
+        throw new Error('not implemented');
+    }
+
+    visitListInit(node: any[]): Expression {
+        throw new Error('not implemented');
+    }
+
+    visitNewArrayInit(node: any[]): Expression {
+        throw new Error('not implemented');
+    }
+
+    visitNewArrayBounds(node: any[]): Expression {
+        throw new Error('not implemented');
+    }
+
+    visitArrayLength(node: any[]): Expression {
+        throw new Error('not implemented');
+    }
+
+    visitArrayIndex(node: any[]): Expression {
+        throw new Error('not implemented');
+    }
+
+    visitAssign(node: any[]) {
+        return Expression.assign(this.visit(node[1]), this.visit(node[2]));
+    }
+
+    visitBlock(node: any[]) {
+        const variables = node[1].map(v => Expression.parameter(v[0]));
+        this.env.push(variables);
+        const expressions = this.visitMany(node[2]);
+        this.env.pop();
+        return Expression.block(variables, expressions);
     }
 }
